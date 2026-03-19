@@ -1,0 +1,877 @@
+
+
+
+---------
+App.jsx
+---------
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
+import AllJobs from "./pages/AllJobs"
+import FavoriteJobs from "./pages/FavoriteJobs" 
+
+function App() {
+  return (
+    <BrowserRouter>
+      
+      <h2>Job Portal Working</h2>
+      <nav>
+        <Link to="/">All Jobs</Link> | 
+        <Link to="/favorites">Favorites</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<AllJobs />} />
+        <Route path="/favorites" element={<FavoriteJobs />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App
+
+------------------------------------------------------Navigation with NavBar------------------------------------------
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
+import AllJobs from "./pages/AllJobs"
+import FavoriteJobs from "./pages/FavoriteJobs"
+import Navbar from "./pages/Navbar" 
+
+function App() {
+  return (
+    <BrowserRouter>
+      
+      <Navbar />
+
+      <Routes>
+        <Route path="/" element={<AllJobs />} />
+        <Route path="/favorites" element={<FavoriteJobs />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App
+
+------------
+Navbar.jsx
+-----------
+
+import { Link } from "react-router-dom";
+
+function Navbar() {
+  return (
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div className="container">
+        <Link className="navbar-brand" to="/">
+          Job Portal
+        </Link>
+
+        <div className="navbar-nav">
+          <Link className="nav-link" to="/">
+            All Jobs
+          </Link>
+
+          <Link className="nav-link" to="/favorites">
+            Favorite Jobs
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+export default Navbar;
+
+-------------------------Navbar with Create Component----------------------------
+import { Link } from "react-router-dom";
+
+function Navbar() {
+  return (
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div className="container">
+        <Link className="navbar-brand" to="/">
+          Job Portal
+        </Link>
+
+        <div className="navbar-nav">
+          <Link className="nav-link" to="/">
+            All Jobs
+          </Link>
+
+          <Link className="nav-link" to="/favorites">
+            Favorite Jobs
+          </Link>
+          <Link className="nav-link" to="/create">
+            Create Job
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+export default Navbar;
+
+-------------
+CreateJob.jsx
+-------------
+import { useState } from "react";
+
+function CreateJob() {
+  const [formData, setFormData] = useState({
+    title: "",
+    company: "",
+    location: ""
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("http://localhost:5000/api/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+      console.log("Job Created:", data);
+
+      alert("Job Created Successfully!");
+
+      // Reset form
+      setFormData({
+        title: "",
+        company: "",
+        location: ""
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("Error creating job");
+    }
+  };
+
+  return (
+    <div className="container mt-4">
+      <h2>Create Job</h2>
+
+        <div className="offset-4 col-4">
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label>Job Title</label>
+          <input
+            type="text"
+            className="form-control"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Company</label>
+          <input
+            type="text"
+            className="form-control"
+            name="company"
+            value={formData.company}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Location</label>
+          <input
+            type="text"
+            className="form-control"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+          />
+        </div>
+
+        <button className="btn btn-primary">Create Job</button>
+      </form>
+      </div>
+    </div>
+  );
+}
+
+export default CreateJob;
+
+
+-------------------------------------------------------------Adding Navigation with Backend API-------------------
+
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
+import AllJobs from "./pages/AllJobs"
+import FavoriteJobs from "./pages/FavoriteJobs"
+import Navbar from "./pages/Navbar"
+import CreateJob from "./pages/CreateJob";
+import EditJob from "./pages/EditJob"
+
+function App() {
+  return (
+    <BrowserRouter>
+      
+      <Navbar />
+
+      <Routes>
+        <Route path="/" element={<AllJobs />} />
+        <Route path="/favorites" element={<FavoriteJobs />} />
+        <Route path="/create" element={<CreateJob />} />
+        <Route path="/edit/:id" element={<EditJob />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App
+
+
+
+---------------------Simple Call to Job Card------------------
+-------------
+AllJobs.jsx
+-------------
+
+import { useEffect, useState } from "react";
+import { setDoc, collection, doc } from "firebase/firestore";
+import { db } from "../services/firebase";
+import JobCard from "../components/JobCard";
+
+function AllJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savedJobs, setSavedJobs] = useState([]);
+
+  useEffect(() => {
+    fetch("https://jsonfakery.com/jobs")
+      .then((res) => res.json())
+      .then((data) => {
+        setJobs(data);
+        setLoading(false);
+      });
+  }, []);
+
+  const saveJob = async (job) => {
+    await setDoc(doc(db, "favorites", job.id), job);
+
+    alert("Job added to favorites ⭐");
+    // track saved jobs
+    setSavedJobs([...savedJobs, job.id]);
+  };
+
+  return (
+      <div>
+       <h2>All Jobs</h2>
+
+       {jobs.map(job => (
+        <JobCard
+              key={job.id}
+              job={job}
+              buttonText="⭐ Favorite"
+              onAction={saveJob}
+            />
+       ))}
+
+      </div>
+  );
+}
+
+export default AllJobs;
+
+
+------------------------------------------Call to Job Card with Different Action, Button Text to Job Card from Favorite------------
+
+import { useEffect, useState } from "react";
+import { setDoc, collection, doc } from "firebase/firestore";
+import { db } from "../services/firebase";
+import JobCard from "../components/JobCard";
+
+function AllJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savedJobs, setSavedJobs] = useState([]);
+
+  useEffect(() => {
+  fetch("https://jsonfakery.com/jobs")
+      .then((res) => res.json())
+      .then((data) => {
+        setJobs(data);
+        setLoading(false);
+      });
+  }, []);
+
+  const saveJob = async (job) => {
+    await setDoc(doc(db, "favorites", job.id), job);
+
+    alert("Job added to favorites ⭐");
+    // track saved jobs
+    setSavedJobs([...savedJobs, job.id]);
+  };
+
+  return (
+    <div className="container mt-4">
+      <h2 className="text-danger text-center mb-4">All Jobs</h2>
+
+      {loading ? (
+        <div className="text-center">
+          <div className="spinner-border text-primary"></div>
+          <p>Loading Jobs...</p>
+        </div>
+      ) : (
+        <div className="row">
+          {jobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              buttonText={
+                savedJobs.includes(job.id) ? "Saved ✅" : "⭐ Favorite"
+              }
+              disabled={savedJobs.includes(job.id)}
+              onAction={saveJob}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AllJobs;
+
+
+
+----------------------------------------------- All Jobs with Custom API to Display data from MongoDB--------------------
+import { useEffect, useState } from "react";
+import { setDoc, collection, doc } from "firebase/firestore";
+import { db } from "../services/firebase";
+import JobCard from "../components/JobCard";
+
+function AllJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savedJobs, setSavedJobs] = useState([]);
+
+  useEffect(() => {
+    // fetch("https://jsonfakery.com/jobs")
+    fetch("http://localhost:5000/api/jobs")
+      .then((res) => res.json())
+      .then((data) => {
+        setJobs(data);
+        setLoading(false);
+      });
+  }, []);
+
+  const saveJob = async (job) => {
+    await setDoc(doc(db, "favorites", job.id), job);
+
+    alert("Job added to favorites ⭐");
+    // track saved jobs
+    setSavedJobs([...savedJobs, job.id]);
+  };
+
+  return (
+      <div className="container mt-4">
+      <h2 className="text-danger text-center mb-4">All Jobs</h2>
+
+      {loading ? (
+        <div className="text-center">
+          <div className="spinner-border text-primary"></div>
+          <p>Loading Jobs...</p>
+        </div>
+      ) : (
+        <div className="row">
+          {jobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              buttonText={
+                savedJobs.includes(job.id) ? "Saved ✅" : "⭐ Favorite"
+              }
+              disabled={savedJobs.includes(job.id)}
+              onAction={saveJob}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AllJobs;
+
+
+
+
+---------------------------------------------All Jobs with Different Custome Functions, like Favorite, Edit, Delete replacing Firebase logic------
+
+import { useEffect, useState } from "react";
+import axios from "axios";
+import JobCard from "../components/JobCard";
+import { useNavigate } from "react-router-dom";
+
+function AllJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
+  const navigate = useNavigate();
+
+  // ✅ Fetch Jobs
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/jobs");
+      setJobs(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ⭐ Favorite (local toggle for now)
+  const handleFavorite = (job) => {
+    if (favorites.includes(job._id)) {
+      setFavorites(favorites.filter((id) => id !== job._id));
+    } else {
+      setFavorites([...favorites, job._id]);
+    }
+  };
+
+  // 🗑️ Delete Job
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/jobs/${id}`);
+
+      // update UI
+      setJobs(jobs.filter((job) => job._id !== id));
+
+      alert("Job deleted successfully 🗑️");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // ✏️ Edit Job
+  const handleEdit = (job) => {
+    navigate(`/edit/${job._id}`);
+  };
+
+  return (
+    <div className="container mt-4">
+      <h2 className="text-danger text-center mb-4">All Jobs</h2>
+
+      {loading ? (
+        <div className="text-center">
+          <div className="spinner-border text-primary"></div>
+          <p>Loading Jobs...</p>
+        </div>
+      ) : (
+        <div className="row">
+          {jobs.map((job) => (
+            <JobCard
+              key={job._id}
+              job={job}
+              isFavorite={favorites.includes(job._id)}
+              onFavorite={handleFavorite}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AllJobs;
+
+
+-----------------------------Update the Favorite function to call the Faviorte API in the Backend---------------
+
+
+ const handleFavorite = async (job) => {
+  try {
+    const res = await axios.put(
+      `http://localhost:5000/api/jobs/favorite/${job._id}`
+    );
+
+    // update jobs state with new favorite value
+    setJobs(
+      jobs.map((j) =>
+        j._id === job._id ? { ...j, isFavorite: res.data.isFavorite } : j
+      )
+    );
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+-----Update the JobCard Component in the same----
+<JobCard
+  key={job._id}
+  job={job}
+  isFavorite={job.isFavorite}   // 🔥 from DB now
+  onFavorite={handleFavorite}
+  onEdit={handleEdit}
+  onDelete={handleDelete}
+/>
+
+
+------Remove this in AllJobs-------
+
+const [favorites, setFavorites] = useState([]);
+
+
+----------------------------------------------------------------------------------------------------
+-------------
+JobCard.jsx
+-------------
+----------------------Simple Job Card without any UI  -------------------
+
+function JobCard({ job, buttonText, onAction }) {
+  return (
+    <div style={{
+      border: "1px solid gray",
+      padding: "10px",
+      margin: "10px"
+    }}>
+      <h3>{job.title}</h3>
+      <p>{job.company}</p>
+      <p>{job.location}</p>
+      <button onClick={() => onAction(job)}>
+        {buttonText}
+      </button>
+    </div>
+  )
+}
+export default JobCard
+
+
+----------------------Simple Job Card With UI  -------------------
+function JobCard({ job, buttonText, onAction, disabled }) {
+  return (
+    <div className="col-md-4 mb-4">
+      <div className="card shadow-sm h-100">
+        <div className="card-body d-flex flex-column">
+          <h5 className="card-title">{job.title}</h5>
+
+          <p className="card-text">
+            <strong>Company:</strong> {job.company} <br />
+            <strong>Location:</strong> {job.location}
+          </p>
+
+          <button
+            className="btn btn-primary mt-auto"
+            disabled={disabled}
+            onClick={() => onAction(job)}
+          >
+            {buttonText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default JobCard;
+
+
+--------------------------------------------------------------------
+
+
+---------------
+FavoriteJobs.js
+---------------
+------------------Simple without UI---------------------------
+
+import { useEffect, useState } from "react";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../services/firebase";
+import JobCard from "../components/JobCard";
+
+function FavoriteJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const snapshot = await getDocs(collection(db, "favorites"));
+
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setJobs(data);
+      setLoading(false);
+    };
+
+    fetchFavorites();
+  }, []);
+
+  const removeJob = async (job) => {
+    await deleteDoc(doc(db, "favorites", job.id));
+
+    alert("Job removed from favorites ❌");
+
+    setJobs(jobs.filter((j) => j.id !== job.id));
+  };
+
+  return (
+      <div>
+      <h2>Favorite Jobs</h2>
+      {jobs.map(job => (
+        <JobCard
+          key={job.id}
+          job={job}
+          buttonText="❌ Remove Favorite"
+          onAction={removeJob}
+        />
+      ))}
+  );
+}
+
+export default FavoriteJobs;
+
+
+------------------Simple with UI---------------------------
+
+import { useEffect, useState } from "react";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../services/firebase";
+import JobCard from "../components/JobCard";
+
+function FavoriteJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const snapshot = await getDocs(collection(db, "favorites"));
+
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setJobs(data);
+      setLoading(false);
+    };
+
+    fetchFavorites();
+  }, []);
+
+  const removeJob = async (job) => {
+    await deleteDoc(doc(db, "favorites", job.id));
+
+    alert("Job removed from favorites ❌");
+
+    setJobs(jobs.filter((j) => j.id !== job.id));
+  };
+
+  return (
+    <div className="container mt-4">
+      <h2 className="text-danger text-center mb-4">Favorite Jobs</h2>
+
+      {loading ? (
+        <div className="text-center">
+          <div className="spinner-border text-primary"></div>
+          <p>Loading Jobs...</p>
+        </div>
+      ) : jobs.length === 0 ? (
+        <p className="text-center">No favorite jobs yet.</p>
+      ) : (
+        <div className="row">
+          {jobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              buttonText="❌ Remove Favorite"
+              onAction={removeJob}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default FavoriteJobs;
+
+
+------------------------------------Updated with Backend APIs--------------------------------
+import { useEffect, useState } from "react";
+import axios from "axios";
+import JobCard from "../components/JobCard";
+import { useNavigate } from "react-router-dom";
+
+function FavoriteJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // 🔄 Fetch only favorite jobs
+  useEffect(() => {
+    fetchFavoriteJobs();
+  }, []);
+
+  const fetchFavoriteJobs = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/jobs");
+
+      // ✅ Filter only favorites
+      const favoriteJobs = res.data.filter((job) => job.isFavorite);
+
+      setJobs(favoriteJobs);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ⭐ Remove from favorites (toggle)
+  const handleFavorite = async (job) => {
+    try {
+      const res = await axios.put(
+        `http://localhost:5000/api/jobs/favorite/${job._id}`
+      );
+
+      // remove from UI if unfavorited
+      if (!res.data.isFavorite) {
+        setJobs(jobs.filter((j) => j._id !== job._id));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // 🗑️ Delete job
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/jobs/${id}`);
+
+      setJobs(jobs.filter((job) => job._id !== id));
+      alert("Job deleted 🗑️");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // ✏️ Edit job
+  const handleEdit = (job) => {
+    navigate(`/edit/${job._id}`);
+  };
+
+  return (
+    <div className="container mt-4">
+      <h2 className="text-danger text-center mb-4">Favorite Jobs</h2>
+
+      {loading ? (
+        <div className="text-center">
+          <div className="spinner-border text-primary"></div>
+          <p>Loading Jobs...</p>
+        </div>
+      ) : jobs.length === 0 ? (
+        <p className="text-center">No favorite jobs yet.</p>
+      ) : (
+        <div className="row">
+          {jobs.map((job) => (
+            <JobCard
+              key={job._id}
+              job={job}
+              isFavorite={true} // always true here
+              onFavorite={handleFavorite}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default FavoriteJobs;
+
+
+
+----------------------------Adding Search -------------------------------
+----------
+Navbar.jsx
+----------
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+function Navbar() {
+  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    // navigate with query param
+    navigate(`/?search=${search}`);
+  };
+
+  return (
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div className="container">
+        <Link className="navbar-brand" to="/">
+          Job Portal
+        </Link>
+
+        {/* 🔍 Search Form */}
+        <form className="d-flex mx-auto" onSubmit={handleSearch}>
+          <input
+            className="form-control me-2"
+            type="search"
+            placeholder="Search jobs..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button className="btn btn-outline-light" type="submit">
+            Search
+          </button>
+        </form>
+
+        <div className="navbar-nav">
+          <Link className="nav-link" to="/">
+            All Jobs
+          </Link>
+
+          <Link className="nav-link" to="/favorites">
+            Favorite Jobs
+          </Link>
+
+          <Link className="nav-link" to="/create">
+            Create Job
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+export default Navbar;
+
+----------
+Alljobs.jsx
+----------
+
+import { useLocation } from "react-router-dom";
+
