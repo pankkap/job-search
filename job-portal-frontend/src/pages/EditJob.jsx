@@ -15,7 +15,8 @@ function EditJob() {
 
   // Fetch existing job
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/jobs/${id}`)
+    // axios.get(`http://localhost:5000/api/jobs/${id}`)
+    axios.get(`${import.meta.env.VITE_API_URL}/api/jobs/${id}`)
       .then(res => setJob(res.data))
       .catch(err => console.error(err));
   }, [id]);
@@ -30,7 +31,8 @@ function EditJob() {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:5000/api/jobs/${id}`, job);
+      // await axios.put(`http://localhost:5000/api/jobs/${id}`, job);
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/jobs/${id}`, job);
       navigate("/");
     } catch (error) {
       console.error(error);

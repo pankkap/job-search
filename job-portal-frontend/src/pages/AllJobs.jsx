@@ -39,10 +39,10 @@ const fetchJobs = async () => {
     try {
       setLoading(true);
 
-      const res = await axios.get(
-        `http://localhost:5000/api/jobs?search=${search}`
-      );
-
+      // const res = await axios.get(
+      //   `http://localhost:5000/api/jobs?search=${search}`
+      // );
+      axios.get(`${import.meta.env.VITE_API_URL}/api/jobs`);
       setJobs(res.data);
       setLoading(false);
     } catch (err) {
@@ -63,9 +63,11 @@ const fetchJobs = async () => {
 
   const handleFavorite = async (job) => {
   try {
-    const res = await axios.put(
-      `http://localhost:5000/api/jobs/favorite/${job._id}`
-    );
+    // const res = await axios.put(
+    //   `http://localhost:5000/api/jobs/favorite/${job._id}`
+    // );
+
+    axios.put(`${import.meta.env.VITE_API_URL}/api/jobs/favorite/${job._id}`);
 
     // update jobs state with new favorite value
     setJobs(
@@ -82,8 +84,9 @@ const fetchJobs = async () => {
   // 🗑️ Delete Job
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/jobs/${id}`);
+      // await axios.delete(`http://localhost:5000/api/jobs/${id}`);
 
+      axios.delete(`${import.meta.env.VITE_API_URL}/api/jobs/${id}`);
       // update UI
       setJobs(jobs.filter((job) => job._id !== id));
 

@@ -13,9 +13,12 @@ app.use(express.json());
 
 // Connect DB
 connectDB();
-console.log("Mongo URI:", process.env.MONGO_URI);
 
 // Routes
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
+
 app.use("/api/jobs", require("./routes/jobs"));
 
 // Server

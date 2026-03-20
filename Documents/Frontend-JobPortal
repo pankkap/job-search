@@ -1,6 +1,3 @@
-
-
-
 ---------
 App.jsx
 ---------
@@ -874,4 +871,6 @@ Alljobs.jsx
 ----------
 
 import { useLocation } from "react-router-dom";
+---------------------------------------------------------
 
+Production and development environment

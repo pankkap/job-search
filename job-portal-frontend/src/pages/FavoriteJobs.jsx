@@ -15,7 +15,8 @@ function FavoriteJobs() {
 
   const fetchFavoriteJobs = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/jobs");
+      // const res = await axios.get("http://localhost:5000/api/jobs");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/jobs`);
 
       // ✅ Filter only favorites
       const favoriteJobs = res.data.filter((job) => job.isFavorite);
@@ -31,7 +32,8 @@ function FavoriteJobs() {
   const handleFavorite = async (job) => {
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/jobs/favorite/${job._id}`
+        // `http://localhost:5000/api/jobs/favorite/${job._id}`
+        `${import.meta.env.VITE_API_URL}api/jobs/favorite/${job._id}`
       );
 
       // remove from UI if unfavorited
@@ -46,7 +48,8 @@ function FavoriteJobs() {
   // 🗑️ Delete job
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/jobs/${id}`);
+      // await axios.delete(`http://localhost:5000/api/jobs/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/jobs/${id}`);
 
       setJobs(jobs.filter((job) => job._id !== id));
       alert("Job deleted 🗑️");
