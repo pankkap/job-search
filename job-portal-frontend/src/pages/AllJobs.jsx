@@ -42,13 +42,21 @@ const fetchJobs = async () => {
       // const res = await axios.get(
       //   `http://localhost:5000/api/jobs?search=${search}`
       // );
-      axios.get(`${import.meta.env.VITE_API_URL}/api/jobs`);
-      setJobs(res.data);
+       const url = search
+      ? `${import.meta.env.VITE_API_URL}/api/jobs?search=${search}`
+      : `${import.meta.env.VITE_API_URL}/api/jobs`;
+
+    const res = await axios.get(url);
+
+    console.log("API Response:", res.data); // 🔍 debug
+      setJobs(res.data|| []);
       setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
+    }  catch (err) {
+    console.error("API Error:", err);
+    setJobs([]); // prevent crash
+  } finally {
+    setLoading(false);
+  }
   };
 
 
@@ -67,7 +75,7 @@ const fetchJobs = async () => {
     //   `http://localhost:5000/api/jobs/favorite/${job._id}`
     // );
 
-    axios.put(`${import.meta.env.VITE_API_URL}/api/jobs/favorite/${job._id}`);
+    const res = axios.put(`${import.meta.env.VITE_API_URL}/api/jobs/favorite/${job._id}`);
 
     // update jobs state with new favorite value
     setJobs(
@@ -112,7 +120,7 @@ const fetchJobs = async () => {
         </div>
       ) : (
         <div className="row">
-          {jobs.map((job) => (
+          {Array.isArray(jobs) && jobs.map((job) => (
             <JobCard
               key={job._id}
               job={job}
