@@ -8,12 +8,11 @@ function AllJobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
   const location = useLocation();
-   // 🔍 Get search query from URL
+  // 🔍 Get search query from URL
   const queryParams = new URLSearchParams(location.search);
   const search = queryParams.get("search") || "";
-
 
   // ✅ Fetch Jobs
   // useEffect(() => {
@@ -35,30 +34,29 @@ function AllJobs() {
   //   }
   // };
 
-const fetchJobs = async () => {
+  const fetchJobs = async () => {
     try {
       setLoading(true);
 
       // const res = await axios.get(
       //   `http://localhost:5000/api/jobs?search=${search}`
       // );
-       const url = search
-      ? `${import.meta.env.VITE_API_URL}/api/jobs?search=${search}`
-      : `${import.meta.env.VITE_API_URL}/api/jobs`;
+      const url = search
+        ? `${import.meta.env.VITE_API_URL}/api/jobs?search=${search}`
+        : `${import.meta.env.VITE_API_URL}/api/jobs`;
 
-    const res = await axios.get(url);
+      const res = await axios.get(url);
 
-    console.log("API Response:", res.data); // 🔍 debug
-      setJobs(res.data|| []);
+      console.log("API Response:", res.data); // 🔍 debug
+      setJobs(res.data || []);
       setLoading(false);
-    }  catch (err) {
-    console.error("API Error:", err);
-    setJobs([]); // prevent crash
-  } finally {
-    setLoading(false);
-  }
+    } catch (err) {
+      console.error("API Error:", err);
+      setJobs([]); // prevent crash
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   // ⭐ Favorite (local toggle for now)
   // const handleFavorite = (job) => {
@@ -70,24 +68,23 @@ const fetchJobs = async () => {
   // };
 
   const handleFavorite = async (job) => {
-  try {
-    // const res = await axios.put(
-    //   `http://localhost:5000/api/jobs/favorite/${job._id}`
-    // );
+    try {
+      // const res = await axios.put(
+      //   `http://localhost:5000/api/jobs/favorite/${job._id}`
+      // );
 
-    const res = axios.put(`${import.meta.env.VITE_API_URL}/api/jobs/favorite/${job._id}`);
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/jobs/favorite/${job._id}`,
+      );
 
-    // update jobs state with new favorite value
-    setJobs(
-      jobs.map((j) =>
-        j._id === job._id ? { ...j, isFavorite: res.data.isFavorite } : j
-      )
-    );
-
-  } catch (error) {
-    console.error(error);
-  }
-};
+      // ✅ Replace whole object (clean & safe)
+      setJobs((prevJobs) =>
+        prevJobs.map((j) => (j._id === job._id ? res.data : j)),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // 🗑️ Delete Job
   const handleDelete = async (id) => {
@@ -120,16 +117,17 @@ const fetchJobs = async () => {
         </div>
       ) : (
         <div className="row">
-          {Array.isArray(jobs) && jobs.map((job) => (
-            <JobCard
-              key={job._id}
-              job={job}
-              isFavorite={job.isFavorite}   // 🔥 from DB now
-              onFavorite={handleFavorite}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+          {Array.isArray(jobs) &&
+            jobs.map((job) => (
+              <JobCard
+                key={job._id}
+                job={job}
+                isFavorite={job.isFavorite} // 🔥 from DB now
+                onFavorite={handleFavorite}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
         </div>
       )}
     </div>

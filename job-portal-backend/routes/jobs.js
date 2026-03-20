@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Job = require("../models/Job");
 
-
 // ➤ CREATE JOB
 router.post("/", async (req, res) => {
   try {
@@ -13,7 +12,6 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // ➤ GET ALL JOBS
 // router.get("/", async (req, res) => {
@@ -37,7 +35,6 @@ router.get("/", async (req, res) => {
 
     const jobs = await Job.find(query);
     res.json(jobs);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -53,21 +50,17 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-
 // ➤ UPDATE JOB
 router.put("/:id", async (req, res) => {
   try {
-    const updatedJob = await Job.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     res.json(updatedJob);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // ➤ DELETE JOB
 router.delete("/:id", async (req, res) => {
@@ -81,13 +74,17 @@ router.delete("/:id", async (req, res) => {
 
 // ➤ FAVORITE JOB
 router.put("/favorite/:id", async (req, res) => {
-  try{
+  try {
     const job = await Job.findById(req.params.id);
-  job.isFavorite = !job.isFavorite;
-  await job.save();
-  res.json(job);
-  }
-  catch (err) {
+
+    const updatedJob = await Job.findByIdAndUpdate(
+      req.params.id,
+      { isFavorite: !job.isFavorite },
+      { new: true },
+    );
+
+    res.json(updatedJob);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

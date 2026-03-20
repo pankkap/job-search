@@ -30,20 +30,22 @@ function FavoriteJobs() {
 
   // ⭐ Remove from favorites (toggle)
   const handleFavorite = async (job) => {
-    try {
-      const res = await axios.put(
-        // `http://localhost:5000/api/jobs/favorite/${job._id}`
-        `${import.meta.env.VITE_API_URL}api/jobs/favorite/${job._id}`
-      );
+  try {
+    const res = await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/jobs/favorite/${job._id}`
+    );
 
-      // remove from UI if unfavorited
-      if (!res.data.isFavorite) {
-        setJobs(jobs.filter((j) => j._id !== job._id));
-      }
-    } catch (error) {
-      console.error(error);
+    // ✅ remove from UI if unfavorited
+    if (!res.data.isFavorite) {
+      setJobs((prevJobs) =>
+        prevJobs.filter((j) => j._id !== job._id)
+      );
     }
-  };
+
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   // 🗑️ Delete job
   const handleDelete = async (id) => {
